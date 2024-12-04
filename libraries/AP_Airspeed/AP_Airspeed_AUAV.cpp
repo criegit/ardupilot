@@ -25,8 +25,6 @@
 
 extern const AP_HAL::HAL &hal;
 
-#define AUAVDIFF_I2C_ADDR 0x38
-
 #ifdef AUAV_DEBUGGING
  # define Debug(fmt, args ...)  do {hal.console->printf("%s:%d: " fmt "\n", __FUNCTION__, __LINE__, ## args); hal.scheduler->delay(1); } while(0)
 #else
@@ -96,18 +94,31 @@ void AP_Airspeed_AUAV::timer()
 {
     // Sensor has to be set to specific mode (averaging) suggestion: average16 for less noise and less computing power
     uint8_t raw_bytes[7];
+    uint8_t status;
+    uint32_t pressure_raw;
+    uint32_t temperature_raw;
     if (!dev->read((uint8_t *)&raw_bytes, sizeof(raw_bytes))) {
-        return;
+        // return;
+        status = 0x03;
+        pressure_raw = (0xAA << 16) |
+                                (0xAA << 8) |
+                                0xAA;
+        temperature_raw = (0xAA << 16) |
+                                (0xAA << 8) |
+                                0xAA;
+    }
+    else {
+        // Extract status, pressure, and temperature
+        status = raw_bytes[0];
+        pressure_raw = (raw_bytes[1] << 16) |
+                                (raw_bytes[2] << 8) |
+                                raw_bytes[3];
+        temperature_raw = (raw_bytes[4] << 16) |
+                                    (raw_bytes[5] << 8) |
+                                    raw_bytes[6];
     }
 
-    // Extract status, pressure, and temperature
-    uint8_t status = raw_bytes[0];
-    uint32_t pressure_raw = (raw_bytes[1] << 16) |
-                            (raw_bytes[2] << 8) |
-                            raw_bytes[3];
-    uint32_t temperature_raw = (raw_bytes[4] << 16) |
-                                (raw_bytes[5] << 8) |
-                                raw_bytes[6];
+    
 
     // Check status byte
     if ((status & 0x03) != 0) {
