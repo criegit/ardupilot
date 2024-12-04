@@ -54,6 +54,7 @@
 #include "AP_Airspeed_MSP.h"
 #include "AP_Airspeed_External.h"
 #include "AP_Airspeed_SITL.h"
+#include "AP_Airspeed_AUAV.h" 
 extern const AP_HAL::HAL &hal;
 
 #include <AP_Vehicle/AP_FixedWing.h>
