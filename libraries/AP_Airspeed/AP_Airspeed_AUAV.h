@@ -28,6 +28,15 @@
 
 #include "AP_Airspeed_Backend.h"
 
+// Commands to start measuring modes
+#define START_Single_CMD 0xAA
+#define START_AVERAGE2_CMD 0xAC
+#define START_AVERAGE4_CMD 0xAD
+#define START_AVERAGE8_CMD 0xAE
+#define START_AVERAGE16_CMD 0xAF
+
+
+
 class AP_Airspeed_AUAV : public AP_Airspeed_Backend
 {
 public:
