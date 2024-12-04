@@ -43,7 +43,7 @@ AP_Airspeed_AUAV::AP_Airspeed_AUAV(AP_Airspeed &_frontend, uint8_t _instance, co
 AP_Airspeed_Backend *AP_Airspeed_AUAV::probe(AP_Airspeed &_frontend,
                                              uint8_t _instance,
                                              AP_HAL::OwnPtr<AP_HAL::I2CDevice> _dev,
-                                             const float _range_inH2O)
+                                             const float _range_inH2O)  // Todo: probably not fiding the sensor. It is tryng to read something (reg 0???) but no answer.
 {
     if (!_dev) {
         return nullptr;
@@ -67,8 +67,8 @@ void AP_Airspeed_AUAV::setup()
     set_bus_id(dev->get_bus_id());
 
     // Send Start-Average16 command to start measurement
-    uint8_t command[] = {START_Single_CMD};
-    if (!dev->transfer(command, 1, nullptr, 0)) {
+    uint8_t command[] = {START_AVERAGE2_CMD};
+    if (!dev->transfer(command, 0, nullptr, 0)) { // Todo: This line might work, but it does not reach this code ever.
         Debug("AUAV: Failed to send Start-Average16 command");
         return;
     }
