@@ -68,6 +68,14 @@ void AP_Airspeed_AUAV::setup()
     dev->set_device_type(uint8_t(DevType::AUAV));
     set_bus_id(dev->get_bus_id());
 
+    // Send Start-Average16 command to start measurement
+    uint8_t command[] = {START_Single_CMD};
+    if (!dev->transfer(command, 1, nullptr, 0)) {
+        Debug("AUAV: Failed to send Start-Average16 command");
+        return;
+    }
+
+    // Register periodic callback for differential pressure sensor
     dev->register_periodic_callback(1000000UL/50U,
                                     FUNCTOR_BIND_MEMBER(&AP_Airspeed_AUAV::timer, void));
 }
