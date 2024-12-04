@@ -26,7 +26,6 @@
 extern const AP_HAL::HAL &hal;
 
 #define AUAVDIFF_I2C_ADDR 0x38
-// #define AUAVABS_I2C_ADDR 0x39
 
 #ifdef AUAV_DEBUGGING
  # define Debug(fmt, args ...)  do {hal.console->printf("%s:%d: " fmt "\n", __FUNCTION__, __LINE__, ## args); hal.scheduler->delay(1); } while(0)
@@ -116,7 +115,7 @@ void AP_Airspeed_AUAV::timer()
         return;
     }
 
-    float temp = temp_raw * (155.0f / 16777216.0f) - 45.0f;
+    float temp = temperature_raw * (155.0f / 16777216.0f) - 45.0f;
 
     WITH_SEMAPHORE(sem);
 
