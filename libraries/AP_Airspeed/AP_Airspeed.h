@@ -192,6 +192,9 @@ public:
         TYPE_MSP=14,
         TYPE_I2C_ASP5033=15,
         TYPE_EXTERNAL=16,
+        TYPE_I2C_AUAV_5IN=17,
+        TYPE_I2C_AUAV_10IN=18,
+        TYPE_I2C_AUAV_10IN=19,
         TYPE_SITL=100,
     };
 

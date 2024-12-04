@@ -436,6 +436,20 @@ void AP_Airspeed::allocate()
             sensor[i] = NEW_NOTHROW AP_Airspeed_MSP(*this, i, 0);
 #endif
             break;
+        case TYPE_I2C_AUAV_5IN:
+#if AP_AIRSPEED_DLVR_ENABLED
+            sensor[i] = NEW_NOTHROW AP_Airspeed_AUAV(*this, i, 5);
+#endif
+            break;
+        case TYPE_I2C_AUAV_10IN:
+#if AP_AIRSPEED_DLVR_ENABLED
+            sensor[i] = NEW_NOTHROW AP_Airspeed_AUAV(*this, i, 10);
+#endif
+            break;
+        case TYPE_I2C_AUAV_30IN:
+#if AP_AIRSPEED_DLVR_ENABLED
+            sensor[i] = NEW_NOTHROW AP_Airspeed_AUAV(*this, i, 30);
+#endif
         case TYPE_EXTERNAL:
 #if AP_AIRSPEED_EXTERNAL_ENABLED
             sensor[i] = NEW_NOTHROW AP_Airspeed_External(*this, i);
