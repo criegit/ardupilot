@@ -26,7 +26,7 @@
 extern const AP_HAL::HAL &hal;
 
 #define AUAVDIFF_I2C_ADDR 0x38
-#define AUAVABS_I2C_ADDR 0x39
+// #define AUAVABS_I2C_ADDR 0x39
 
 #ifdef AUAV_DEBUGGING
  # define Debug(fmt, args ...)  do {hal.console->printf("%s:%d: " fmt "\n", __FUNCTION__, __LINE__, ## args); hal.scheduler->delay(1); } while(0)
@@ -84,15 +84,6 @@ bool AP_Airspeed_AUAV::init()
     return true;
 }
 
-#define STATUS_SHIFT 30
-#define TEMPERATURE_SHIFT 5 //todo: adjust bitmask to more bytes sent by sensor
-#define TEMPERATURE_MASK ((1 << 11) - 1) //todo: adjust bitmask to more bytes sent by sensor
-#define PRESSURE_SHIFT 16 //todo: adjust bitmask to more bytes sent by sensor
-#define PRESSURE_MASK ((1 << 14) - 1) //todo: adjust bitmask to more bytes sent by sensor
-
-#define AUAV_OFFSET 8388608.0f
-#define AUAV_SCALE 16777216.0f
-
 // 50Hz timer
 void AP_Airspeed_AUAV::timer()
 {
@@ -102,21 +93,23 @@ void AP_Airspeed_AUAV::timer()
         return;
     }
 
-    uint32_t data = (raw_bytes[0] << 24) |
-                    (raw_bytes[1] << 16) |
-                    (raw_bytes[2] << 8)  |
-                    raw_bytes[3]; //todo: adjust bitmask to more bytes sent by sensor
+    // Extract status, pressure, and temperature
+    uint8_t status = raw_bytes[0];
+    uint32_t pressure_raw = (raw_bytes[1] << 16) |
+                            (raw_bytes[2] << 8) |
+                            raw_bytes[3];
+    uint32_t temperature_raw = (raw_bytes[4] << 16) |
+                                (raw_bytes[5] << 8) |
+                                raw_bytes[6];
 
-    if ((data >> STATUS_SHIFT)) {
-        // anything other then 00 in the status bits is an error
-        Debug("AUAV: Bad status read %u", (unsigned int)(data >> STATUS_SHIFT));
+    // Check status byte
+    if ((status & 0x03) != 0) {
+        Debug("AUAV: Bad status read %u", status);
         return;
     }
 
-    uint32_t pres_raw = (data >> PRESSURE_SHIFT)    & PRESSURE_MASK;
-    uint32_t temp_raw = (data >> TEMPERATURE_SHIFT) & TEMPERATURE_MASK;
+    float press_h2o = 1.25f * (pressure_raw - 8388608.0f) / 16777216.0f * (2.0f * range_inH2O);
 
-    float press_h2o = 1.25f * 2.0f * range_inH2O * ((pres_raw - AUAV_OFFSET) / AUAV_SCALE);
 
     if ((press_h2o > range_inH2O) || (press_h2o < -range_inH2O)) {
         Debug("AUAV: Out of range pressure %f", press_h2o);
