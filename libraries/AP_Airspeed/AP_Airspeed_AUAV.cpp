@@ -74,8 +74,8 @@ void AP_Airspeed_AUAV::setup()
     GCS_SEND_TEXT(MAV_SEVERITY_INFO, "AUAV: setup got bus id");
     // Send Start-Average16 command to start measurement
     uint8_t command[] = {START_AVERAGE2_CMD};
-    GCS_SEND_TEXT(MAV_SEVERITY_INFO, "AUAV: setup created start command");
-    if (!dev->transfer(command, 0, nullptr, 0)) { 
+    GCS_SEND_TEXT(MAV_SEVERITY_INFO, "AUAV: setup created start command %u", command[0]);
+    if (!dev->transfer(command, 1, nullptr, 0)) { 
         Debug("AUAV: Failed to send Start-Average2 command");
         return;
     }
