@@ -22,7 +22,7 @@
 #if AP_AIRSPEED_AUAV_ENABLED
 
 #include <AP_Math/AP_Math.h>
-
+#include <GCS_MAVLink/GCS.h>
 extern const AP_HAL::HAL &hal;
 
 #ifdef AUAV_DEBUGGING
@@ -60,32 +60,45 @@ AP_Airspeed_Backend *AP_Airspeed_AUAV::probe(AP_Airspeed &_frontend,
 // initialise the sensor
 void AP_Airspeed_AUAV::setup()
 {
+    Debug("AUAV: Started setup code");
+    GCS_SEND_TEXT(MAV_SEVERITY_INFO, "AUAV: Started setup code");
     WITH_SEMAPHORE(dev->get_semaphore());
+    GCS_SEND_TEXT(MAV_SEVERITY_INFO, "AUAV: setup got semaphore");
     dev->set_speed(AP_HAL::Device::SPEED_LOW);
+    GCS_SEND_TEXT(MAV_SEVERITY_INFO, "AUAV: setup speed low");
     dev->set_retries(2);
+    GCS_SEND_TEXT(MAV_SEVERITY_INFO, "AUAV: setup retries 2");
     dev->set_device_type(uint8_t(DevType::AUAV));
+    GCS_SEND_TEXT(MAV_SEVERITY_INFO, "AUAV: setup devtype auav");
     set_bus_id(dev->get_bus_id());
-
+    GCS_SEND_TEXT(MAV_SEVERITY_INFO, "AUAV: setup got bus id");
     // Send Start-Average16 command to start measurement
     uint8_t command[] = {START_AVERAGE2_CMD};
-    if (!dev->transfer(command, 0, nullptr, 0)) { // Todo: This line might work, but it does not reach this code ever.
-        Debug("AUAV: Failed to send Start-Average16 command");
+    GCS_SEND_TEXT(MAV_SEVERITY_INFO, "AUAV: setup created start command");
+    if (!dev->transfer(command, 0, nullptr, 0)) { 
+        Debug("AUAV: Failed to send Start-Average2 command");
         return;
     }
-
+    GCS_SEND_TEXT(MAV_SEVERITY_INFO, "AUAV: setup sent start command");
     // Register periodic callback for differential pressure sensor
+    Debug("AUAV: Start periodic callback");
     dev->register_periodic_callback(1000000UL/50U,
                                     FUNCTOR_BIND_MEMBER(&AP_Airspeed_AUAV::timer, void));
+    Debug("AUAV: Started periodic callback, finished setup");
 }
 
 // probe and initialise the sensor
 bool AP_Airspeed_AUAV::init()
 {
+    Debug("AUAV: Started init code");
+    GCS_SEND_TEXT(MAV_SEVERITY_INFO, "AUAV: Started init code");
     dev = hal.i2c_mgr->get_device(get_bus(), AUAVDIFF_I2C_ADDR);
     if (!dev) {
+        Debug("AUAV: finished init !dev");
         return false;
     }
     setup();
+    Debug("AUAV: finished init code dev");
     return true;
 }
 
@@ -93,6 +106,8 @@ bool AP_Airspeed_AUAV::init()
 void AP_Airspeed_AUAV::timer()
 {
     // Sensor has to be set to specific mode (averaging) suggestion: average16 for less noise and less computing power
+    Debug("AUAV: Started timer code");
+    GCS_SEND_TEXT(MAV_SEVERITY_INFO, "AUAV: Started timer code");
     uint8_t raw_bytes[7];
     uint8_t status;
     uint32_t pressure_raw;
