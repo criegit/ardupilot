@@ -75,7 +75,26 @@ void AP_Airspeed_AUAV::setup()
     // Send Start-Average16 command to start measurement
     uint8_t command[] = {START_AVERAGE2_CMD};
     GCS_SEND_TEXT(MAV_SEVERITY_INFO, "AUAV: setup created start command %u", command[0]);
-    if (!dev->transfer(command, 1, nullptr, 0)) { 
+    //GCS_SEND_TEXT(MAV_SEVERITY_INFO, "AUAV: pretesting command %f", float(dev->transfer(command, 1, nullptr, 0));
+    uint8_t ret_i2c = dev->transfer(command, 1, nullptr, 0);
+    GCS_SEND_TEXT(MAV_SEVERITY_INFO, "AUAV: setup return by send i2c command %d", ret_i2c);
+
+// suggestion by copilot:
+// bool custom_i2c_write(uint8_t address, uint8_t data) {
+//     // Start I2C communication
+//     if (!hal.i2c->begin_transmission(address)) {
+//         return false;
+//     }
+//     // Send data
+//     if (!hal.i2c->write(data)) {
+//         return false;
+//     }
+//     // End I2C communication
+//     hal.i2c->end_transmission();
+//     return true;
+// }
+
+    if (!ret_i2c) { 
         Debug("AUAV: Failed to send Start-Average2 command");
         return;
     }
@@ -114,6 +133,7 @@ void AP_Airspeed_AUAV::timer()
     uint32_t temperature_raw;
     if (!dev->read((uint8_t *)&raw_bytes, sizeof(raw_bytes))) {
         // return;
+        GCS_SEND_TEXT(MAV_SEVERITY_INFO, "AUAV: timer raw_bytes[0]: %x", raw_bytes[0]);
         status = 0x03;
         pressure_raw = (0xAA << 16) |
                                 (0xAA << 8) |
